@@ -32,3 +32,18 @@ jobs:
             Since quarantine was modified, please make sure
             you are following the process described in
             [Quarantine Process](https://nordicsemi.atlassian.net/wiki/spaces/NCS/pages/1104576817/Quarantine).
+      - name: Get changes from quarantines
+        id: changed-files
+        uses: tj-actions/changed-files@24d32ffd492484c1d75e0c0b894501ddb9d30d62
+        with:
+          files_yaml: 'scripts/quarantine*.yaml'
+          json: true
+          write_output_files: true
+      - name: Run step if test file(s) change
+        # NOTE: Ensure all outputs are prefixed by the same key used above e.g. `test_(...)` | `doc_(...)` | `src_(...)` when trying to access the `any_changed` output.
+        if: steps.changed-files.outputs.test_any_changed == 'true'  
+        env:
+          TEST_ALL_CHANGED_FILES: ${{steps.changed-files.outputs.test_all_changed_files}}
+        run: |
+          echo "One or more test file(s) has changed."
+          echo "List all the files that have changed: $TEST_ALL_CHANGED_FILES"
