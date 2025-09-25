@@ -109,7 +109,6 @@
   comment: "https://nordicsemi.atlassian.net/browse/NCSDK-35521"
 
 - scenarios:
-    - applications.machine_learning.zrelease
     - applications.machine_learning.zdebug
   platforms:
     - thingy53/nrf5340/cpuapp

@@ -195,7 +195,7 @@
 
 - scenarios:
     - libraries.libc.common.picolibc.module
-    - libraries.libc.common.picolibc.notls
+    - libraries.libc.common.picolibc
     - libraries.libc.strerror.picolibc.module
     - libraries.libc.strerror.picolibc.notls
     - libraries.libc.picolibc.sprintf_inexact
