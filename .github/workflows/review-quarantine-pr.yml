@@ -32,4 +32,13 @@ jobs:
             Since quarantine was modified, please make sure
             you are following the process described in
             [Quarantine Process](https://nordicsemi.atlassian.net/wiki/spaces/NCS/pages/1104576817/Quarantine).
-      
+      - name: Get changed quarantined files
+        run: |
+          gh pr view ${{ github.event.pull_request.number }} --json files --jq '.files[] | select(.path | contains("scripts/quarantine")) | .path' > quarantined_files.txt
+        id: quarantined_files
+      - name: Add quarantined files to comment
+        run: |
+          echo "Changed quarantined files:" >> $COMMENT
+          cat quarantined_files.txt >> $COMMENT
+        env:
+          COMMENT: ${{ steps.quarantine-info.outputs.comment }}
