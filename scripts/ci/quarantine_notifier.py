@@ -135,7 +135,7 @@ def parse_diff_for_scenarios(diff_text: str) -> Tuple[Set[str], Set[str]]:
             m = re.match(r"^-\s+(.*)$", trimmed)
             if m:
                 val = clean_value(m.group(1))
-                if not val:
+                if not val or val.contains("/"):
                     continue
                 scenarios.add(val)
             # else: other lines inside 'scenarios:' block are ignored
