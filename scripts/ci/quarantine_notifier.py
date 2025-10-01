@@ -66,6 +66,7 @@ def parse_diff_for_scenarios(diff_text: str) -> Tuple[Set[str], Set[str]]:
     """
     added: Set[str] = set()
     removed: Set[str] = set()
+    scenarios: Set[str] = set()
 
     in_scenarios = False
     scenarios_indent = None  # indentation (spaces) of the 'scenarios:' key
@@ -107,7 +108,14 @@ def parse_diff_for_scenarios(diff_text: str) -> Tuple[Set[str], Set[str]]:
         # Enter scenarios block whenever we see a 'scenarios:' key (context, +, or -)
         if re.fullmatch(r"- scenarios:\s*", trimmed):
             in_scenarios = True
+            in_platforms = False
             scenarios_indent = indent
+            continue
+
+        if re.fullmatch(r"platforms:\s*", trimmed):
+            in_platforms = True
+            in_scenarios = False
+            platforms_indent = indent
             continue
 
         # Leave scenarios on a new YAML key at same or shallower indent
@@ -117,6 +125,11 @@ def parse_diff_for_scenarios(diff_text: str) -> Tuple[Set[str], Set[str]]:
             scenarios_indent = None
             continue
 
+        if in_platforms and re.fullmatch(r"[A-Za-z0-9_.-]+:\s*", trimmed) and indent <= (platforms_indent or 0):
+            in_platforms = False
+            platforms_indent = None
+            continue
+
         # Collect list items within scenarios
         if in_scenarios:
             m = re.match(r"^-\s+(.*)$", trimmed)
@@ -124,11 +137,21 @@ def parse_diff_for_scenarios(diff_text: str) -> Tuple[Set[str], Set[str]]:
                 val = clean_value(m.group(1))
                 if not val:
                     continue
-                if prefix == "+":
-                    added.add(val)
-                elif prefix == "-":
-                    removed.add(val)
+                scenarios.add(val)
             # else: other lines inside 'scenarios:' block are ignored
+
+        if in_platforms:
+            m = re.match(r"^-\s+(.*)$", trimmed)
+            if m:
+                val = clean_value(m.group(1))
+                if not val:
+                    continue
+                if prefix == "+":
+                    added.update(scenarios)
+                    scenarios = set()
+                elif prefix == "-":
+                    removed.update(scenarios)
+                    scenarios = set()
 
     return added, removed
 

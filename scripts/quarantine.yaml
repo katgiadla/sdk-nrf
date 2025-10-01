@@ -107,7 +107,7 @@
     - applications.machine_learning.zdebug
   platforms:
     - thingy53/nrf5340/cpuapp
-  comment: "https://nordicsemi.atlassian.net/browse/NCSDK-35522"
+  comment: "https://nordicsemi.atlassian.net/browse/NCSDK-35522" 
 
 - scenarios:
     - sample.dfu.dfu_multi_image
