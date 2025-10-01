@@ -378,6 +378,8 @@ def main() -> int:
 
     diff_text = diff_path.read_text(encoding="utf-8", errors="ignore")
     added_patterns, removed_patterns = parse_diff_for_scenarios(diff_text)
+    print(f"Added patterns: {added_patterns}")
+    print(f"Removed patterns: {removed_patterns}")
 
     scenario_map = discover_scenarios(root)
     code_rules = load_codeowners(root)
