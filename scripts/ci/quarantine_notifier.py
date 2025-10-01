@@ -72,6 +72,7 @@ def parse_diff_for_scenarios(diff_text: str) -> Tuple[Set[str], Set[str]]:
 
     DIFF_SKIP_PREFIXES = ("diff --git ", "index ", "--- ", "+++ ", "@@")
 
+# czy nastąpiła zmiana w linii
     def get_prefix_and_body(line: str) -> Tuple[str, str]:
         if not line:
             return "", ""
@@ -79,7 +80,7 @@ def parse_diff_for_scenarios(diff_text: str) -> Tuple[Set[str], Set[str]]:
         if ch in "+- ":
             return ch, line[1:]
         return "", line  # shouldn't happen in a standard unified diff
-
+# wyliczenie odstępów
     def leading_spaces(s: str) -> int:
         return len(s) - len(s.lstrip(" "))
 
