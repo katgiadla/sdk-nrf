@@ -140,6 +140,7 @@ def parse_diff_for_scenarios(diff_text: str) -> Tuple[Set[str], Set[str]]:
                         removed.add(val)
                     else:
                         scenarios_for_platforms.add(val)
+            continue
         
         if in_platforms:
             m = re.match(r"^-\s+(.*)$", trimmed)
