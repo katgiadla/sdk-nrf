@@ -73,7 +73,6 @@ def parse_diff_for_scenarios(diff_text: str) -> Tuple[Set[str], Set[str]]:
 
     DIFF_SKIP_PREFIXES = ("diff --git ", "index ", "--- ", "+++ ", "@@")
 
-# czy nastąpiła zmiana w linii
     def get_prefix_and_body(line: str) -> Tuple[str, str]:
         if not line:
             return "", ""
@@ -81,7 +80,7 @@ def parse_diff_for_scenarios(diff_text: str) -> Tuple[Set[str], Set[str]]:
         if ch in "+- ":
             return ch, line[1:]
         return "", line  # shouldn't happen in a standard unified diff
-# wyliczenie odstępów
+
     def leading_spaces(s: str) -> int:
         return len(s) - len(s.lstrip(" "))
 
@@ -110,48 +109,45 @@ def parse_diff_for_scenarios(diff_text: str) -> Tuple[Set[str], Set[str]]:
             in_scenarios = True
             in_platforms = False
             scenarios_indent = indent
+            scenarios_for_platforms = set()
             continue
-
-        if re.fullmatch(r"platforms:\s*", trimmed):
-            in_platforms = True
+    
+        if re.fullmatch(r"- platforms:\s*", trimmed):
             in_scenarios = False
-            platforms_indent = indent
+            in_platforms = True
+            scenarios_indent = indent
             continue
 
         # Leave scenarios on a new YAML key at same or shallower indent
         # (allowing letters, digits, underscore, dot, and hyphen in keys)
-        if in_scenarios and re.fullmatch(r"[A-Za-z0-9_.-]+:\s*", trimmed) and indent <= (scenarios_indent or 0):
+        if (in_scenarios or in_platforms) and re.fullmatch(r"[A-Za-z0-9_.-]+:\s*", trimmed) and indent <= (scenarios_indent or 0):
             in_scenarios = False
+            in_platforms = False
             scenarios_indent = None
             continue
 
-        if in_platforms and re.fullmatch(r"[A-Za-z0-9_.-]+:\s*", trimmed) and indent <= (platforms_indent or 0):
-            in_platforms = False
-            platforms_indent = None
-            continue
-
         # Collect list items within scenarios
-        if in_scenarios:
-            m = re.match(r"^-\s+(.*)$", trimmed)
-            if m:
-                val = clean_value(m.group(1))
-                if not val or val.contains("/"):
-                    continue
-                scenarios.add(val)
-            # else: other lines inside 'scenarios:' block are ignored
-
-        if in_platforms:
+        if in_scenarios or in_platforms:
             m = re.match(r"^-\s+(.*)$", trimmed)
             if m:
                 val = clean_value(m.group(1))
                 if not val:
                     continue
-                if prefix == "+":
-                    added.update(scenarios)
-                    scenarios = set()
-                elif prefix == "-":
-                    removed.update(scenarios)
-                    scenarios = set()
+                if in_scenarios:
+                    if prefix == "+":
+                        added.add(val)
+                    elif prefix == "-":
+                        removed.add(val)
+                    else:
+                        scenarios_for_platforms.add(val)
+                elif in_platforms:
+                    if prefix == "+":
+                        added.update(scenarios_for_platforms)
+                    elif prefix == "-":
+                        removed.update(scenarios_for_platforms)
+                    else:
+                        continue
+                    scenarios_for_platforms = set()
 
     return added, removed
 
