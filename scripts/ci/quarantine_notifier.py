@@ -127,7 +127,7 @@ def parse_diff_for_scenarios(diff_text: str) -> Tuple[Set[str], Set[str]]:
             continue
 
         # Collect list items within scenarios
-        if in_scenarios or in_platforms:
+        if in_scenarios:
             m = re.match(r"^-\s+(.*)$", trimmed)
             if m:
                 val = clean_value(m.group(1))
@@ -140,14 +140,17 @@ def parse_diff_for_scenarios(diff_text: str) -> Tuple[Set[str], Set[str]]:
                         removed.add(val)
                     else:
                         scenarios_for_platforms.add(val)
-                elif in_platforms:
-                    if prefix == "+":
-                        added.update(scenarios_for_platforms)
-                    elif prefix == "-":
-                        removed.update(scenarios_for_platforms)
-                    else:
-                        continue
-                    scenarios_for_platforms = set()
+        
+        if in_platforms:
+            m = re.match(r"^-\s+(.*)$", trimmed)
+            if m or ("- all" in trimmed):
+                if prefix == "+":
+                    added.update(scenarios_for_platforms)
+                elif prefix == "-":
+                    removed.update(scenarios_for_platforms)
+                else:
+                    continue
+                scenarios_for_platforms = set()
 
     return added, removed
 
