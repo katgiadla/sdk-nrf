@@ -40,6 +40,7 @@ tests:
   sample.app_event_manager_shell:
     sysbuild: true
     build_only: false
+    harness: pytest
     platform_allow:
       - qemu_cortex_m3
       - nrf52dk/nrf52832
